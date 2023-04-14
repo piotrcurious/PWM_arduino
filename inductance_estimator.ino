@@ -9,6 +9,7 @@
 #define THERMISTOR_PIN A2 // Analog input pin for thermistor feedback
 #define WATCHDOG_PIN 10 // Digital output pin for watchdog timer
 #define DESTINATION_PIN A3 // Analog input pin for destination voltage feedback
+#define INPUT_VOLTAGE_PIN A4 // Analog input for inductance calculation, connected to input voltage
 
 // Define constants
 #define PWM_FREQ 20000 // PWM frequency in Hz
@@ -43,6 +44,7 @@ void setup() {
   pinMode(THERMISTOR_PIN, INPUT);
   pinMode(WATCHDOG_PIN, OUTPUT);
   pinMode(DESTINATION_PIN, INPUT);
+  pinMode(INPUT_VOLTAGE_PIN, INPUT);
 
   // Set PWM frequency and initial duty cycle
 
@@ -98,7 +100,7 @@ void loop() {
     // Apply a self-tuning strategy for voltage stabilization based on destination voltage feedback and inductance estimate
 
     // Calculate the expected output voltage based on the input voltage, duty cycle and inductance value
-    float expected = analogRead(A5) * VOLTAGE_REF / (1024 * (1 - pwm / PWM_MAX)) * (1 + pwm / PWM_MAX * inductance * PWM_FREQ / CAPACITOR_VALUE);
+    float expected = analogRead(INPUT_VOLTAGE_PIN) * VOLTAGE_REF / (1024 * (1 - pwm / PWM_MAX)) * (1 + pwm / PWM_MAX * inductance * PWM_FREQ / CAPACITOR_VALUE);
 
     // Calculate the error between the expected and actual destination voltage
     float error = destination - expected;
