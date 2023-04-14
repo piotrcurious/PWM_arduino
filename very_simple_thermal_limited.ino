@@ -69,3 +69,16 @@ void loop() {
     pwm++;
     if (pwm > PWM_MAX) pwm = PWM_MAX; // Limit PWM to maximum value 
     analogWrite(PWM_PIN, pwm); // Update PWM output
+  }
+  
+  else if (current > CURRENT_LIMIT + CURRENT_TOLERANCE) { // Output current is too high 
+    pwm--;
+    if (pwm < PWM_MIN) pwm = PWM_MIN; // Limit PWM to minimum value
+    analogWrite(PWM_PIN, pwm); // Update PWM output
+  }
+  
+  else if (temperature > THERMAL_LIMIT) { // Thermistor temperature is too high
+    pwm = PWM_MIN; // Set PWM to minimum value
+    analogWrite(PWM_PIN, pwm); // Update PWM output
+  }
+}
