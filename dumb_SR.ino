@@ -7,6 +7,8 @@
 #define VOLTAGE_PIN A0
 #define CURRENT_PIN A1
 
+#include "shared_defs.h"
+
 // Define the target output voltage and current in volts and amps
 #define VOLTAGE_TARGET 12.0
 #define CURRENT_TARGET 1.0
