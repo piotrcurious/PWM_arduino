@@ -8,6 +8,8 @@
 #define CURRENT_PIN A1 // Analog input pin for current feedback
 #define THERMISTOR_PIN A2 // Analog input pin for thermistor feedback
 
+#include "shared_defs.h"
+
 // Define constants
 #define PWM_FREQ 20000 // PWM frequency in Hz
 #define PWM_MAX 255 // Maximum PWM duty cycle

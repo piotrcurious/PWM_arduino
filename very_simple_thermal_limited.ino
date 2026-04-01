@@ -5,6 +5,8 @@
 #define CURRENT_PIN A1 // Analog input pin for current feedback
 #define THERMISTOR_PIN A2 // Analog input pin for thermistor feedback
 
+#include "shared_defs.h"
+
 // Define constants
 #define PWM_FREQ 20000 // PWM frequency in Hz
 #define PWM_MAX 255 // Maximum PWM duty cycle
@@ -52,31 +54,16 @@ void loop() {
     if (pwm < PWM_MIN) pwm = PWM_MIN; // Limit PWM to minimum value
     analogWrite(PWM_PIN, pwm); // Update PWM output 
   }
-    }
-  
-  else if (current > CURRENT_LIMIT + CURRENT_TOLERANCE) { // Output current is too high 
-    pwm--;
-    if (pwm < PWM_MIN) pwm = PWM_MIN; // Limit PWM to minimum value
-    analogWrite(PWM_PIN, pwm); // Update PWM output
-  }
-  
-  else if (temperature > THERMAL_LIMIT) { // Thermistor temperature is too high
-    pwm = PWM_MIN; // Set PWM to minimum value
-    analogWrite(PWM_PIN, pwm); // Update PWM output
-  }
-}
   else if (voltage < VOLTAGE_SETPOINT - VOLTAGE_TOLERANCE) { // Output voltage is too low 
     pwm++;
     if (pwm > PWM_MAX) pwm = PWM_MAX; // Limit PWM to maximum value 
     analogWrite(PWM_PIN, pwm); // Update PWM output
   }
-  
   else if (current > CURRENT_LIMIT + CURRENT_TOLERANCE) { // Output current is too high 
     pwm--;
     if (pwm < PWM_MIN) pwm = PWM_MIN; // Limit PWM to minimum value
     analogWrite(PWM_PIN, pwm); // Update PWM output
   }
-  
   else if (temperature > THERMAL_LIMIT) { // Thermistor temperature is too high
     pwm = PWM_MIN; // Set PWM to minimum value
     analogWrite(PWM_PIN, pwm); // Update PWM output

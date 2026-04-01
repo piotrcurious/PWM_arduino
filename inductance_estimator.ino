@@ -11,6 +11,8 @@
 #define DESTINATION_PIN A3 // Analog input pin for destination voltage feedback
 #define INPUT_VOLTAGE_PIN A4 // Analog input for inductance calculation, connected to input voltage
 
+#include "shared_defs.h"
+
 // Define constants
 #define PWM_FREQ 20000 // PWM frequency in Hz
 #define PWM_MAX 255 // Maximum PWM duty cycle
