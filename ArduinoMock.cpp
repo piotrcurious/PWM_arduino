@@ -55,6 +55,8 @@ void analogWriteFrequency(uint8_t pin, uint32_t frequency) {}
 void wdt_enable(uint8_t timeout) {}
 void wdt_reset() {}
 
+float __attribute__((weak)) inductance = 0;
+
 void __attribute__((weak)) digitalWrite(uint8_t pin, uint8_t val) {}
 int __attribute__((weak)) digitalRead(uint8_t pin) { return 0; }
 int __attribute__((weak)) analogRead(uint8_t pin) { return 0; }

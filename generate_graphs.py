@@ -11,7 +11,15 @@ def generate_graphs(csv_file, output_prefix):
         print(f"Error reading {csv_file}: {e}")
         return
 
-    fig, (ax1, ax2, ax3) = plt.subplots(3, 1, figsize=(10, 12), sharex=True)
+    has_inductance = 'inductance' in df.columns and (df['inductance'] > 0).any()
+    rows = 4 if has_inductance else 3
+
+    fig, axes = plt.subplots(rows, 1, figsize=(10, 4*rows), sharex=True)
+    if rows == 1: axes = [axes]
+
+    ax1 = axes[0]
+    ax2 = axes[1]
+    ax3 = axes[2]
 
     # Voltage Plot
     ax1.plot(df['time'], df['v_out'], label='V_out', color='blue')
@@ -36,6 +44,13 @@ def generate_graphs(csv_file, output_prefix):
     ax3.grid(True)
     ax3.legend(loc='upper left')
     ax3_temp.legend(loc='upper right')
+
+    if has_inductance:
+        ax4 = axes[3]
+        ax4.plot(df['time'], df['inductance'] * 1e6, label='Estimated L (uH)', color='purple')
+        ax4.set_ylabel('Inductance (uH)')
+        ax4.grid(True)
+        ax4.legend()
 
     plt.tight_layout()
     plt.savefig(f"{output_prefix}_results.png")

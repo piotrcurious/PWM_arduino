@@ -8,11 +8,11 @@
 #endif
 
 #ifndef R1
-#define R1 10000.0   // Resistor divider R1
+#define R1 30000.0   // Resistor divider R1 (30k)
 #endif
 
 #ifndef R2
-#define R2 10000.0   // Resistor divider R2
+#define R2 10000.0   // Resistor divider R2 (10k)
 #endif
 
 #ifndef Rs
