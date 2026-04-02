@@ -5,11 +5,15 @@
 #include "Arduino.h"
 #include "shared_defs.h"
 #include <avr/io.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 
 class BoostSimulator {
 public:
     double V_in = 5.0;      // Input voltage
     double L = 10e-3;      // Inductance 10mH (adjusted for 1kHz control)
+    double L_nominal = 10e-3;
     double C = 10e-3;      // Capacitance 10mF
     double R_load = 50.0;   // Load resistance
     double R_shunt = 0.1;   // Shunt resistance
@@ -27,6 +31,10 @@ public:
     int pwm_pin_val = -1;   // 0-255 or HIGH/LOW, -1 if using registers
     bool key_pin_val = false;
     bool sr_pin_val = false;
+
+    // Fault injection
+    bool fault_adc_0_dead = false;
+    bool fault_short_circuit = false;
 
     void step(double dt_step) {
         sim_time_sec += dt_step;
@@ -72,7 +80,7 @@ public:
         double I_load = V_out / R_load;
 
         // Cross-conduction protection in simulator
-        if (switch_on && sr_on) {
+        if ((switch_on && sr_on) || fault_short_circuit) {
             I_L += ((V_in - I_L * R_parasitic * 10.0) / L_eff) * dt_step;
             Temp += 1.0 * dt_step;
             V_out += (-I_load / C) * dt_step;
@@ -110,7 +118,7 @@ public:
         Temp += (I_L * I_L * 0.0001 - (Temp - 25.0) * 0.001) * dt_step;
 
         // Dynamic inductance simulation: L shifts slightly over time or temperature
-        L = 10e-3 * (1.0 + 0.001 * (Temp - 25.0));
+        L = L_nominal * (1.0 + 0.001 * (Temp - 25.0));
     }
 
     uint16_t get_adc(uint8_t pin) {
@@ -126,7 +134,10 @@ public:
         // For simplicity, let's just use V_out (capacitor voltage) and a small transient factor
         double V_meas = V_out;
 
-        if (pin == A0) val = V_meas * (1 + noise) * (1.0 / VOLTAGE_DIVIDER_RATIO) * (1024.0 / ref);
+        if (pin == A0) {
+            if (fault_adc_0_dead) val = 0;
+            else val = V_meas * (1 + noise) * (1.0 / VOLTAGE_DIVIDER_RATIO) * (1024.0 / ref);
+        }
         else if (pin == A1) val = I_L * R_shunt * (1024.0 / ref);
         else if (pin == A2) {
             double R = 10000.0 * exp(3950.0 * (1.0 / (Temp + 273.15) - 1.0 / 298.15));
@@ -138,6 +149,23 @@ public:
         if (val > 1023) val = 1023;
         if (val < 0) val = 0;
         return (uint16_t)val;
+    }
+
+    void load_config(const char* filename) {
+        FILE* f = fopen(filename, "r");
+        if (!f) return;
+        char line[128];
+        while (fgets(line, sizeof(line), f)) {
+            if (strncmp(line, "L=", 2) == 0) {
+                L = atof(line + 2);
+                L_nominal = L;
+            }
+            else if (strncmp(line, "C=", 2) == 0) C = atof(line + 2);
+            else if (strncmp(line, "R_base=", 7) == 0) R_base = atof(line + 7);
+            else if (strncmp(line, "FAULT_ADC0=", 11) == 0) fault_adc_0_dead = (atoi(line + 11) != 0);
+            else if (strncmp(line, "FAULT_SHORT=", 12) == 0) fault_short_circuit = (atoi(line + 12) != 0);
+        }
+        fclose(f);
     }
 };
 

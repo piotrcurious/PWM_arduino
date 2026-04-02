@@ -16,6 +16,7 @@ int main(int argc, char** argv) {
         }
     }
 
+    simulator.load_config("sim_config.txt");
     setup();
     printf("Simulation starting for 1.0 seconds of virtual time...\n");
 
