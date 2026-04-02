@@ -7,12 +7,15 @@ CFLAGS = -I. -Wall
 SRCS_COMMON = ArduinoMock.cpp ArduinoMockSim.cpp
 OBJS_COMMON = ArduinoMock.o ArduinoMockSim.o
 
-INO_FILES = classic_PI.ino classic_voltage_current_limited.ino dumb_SR.ino inductance_estimator.ino very_simple_thermal_limited.ino very_simple_thermal_limited_with_WDT.ino weird_SR.ino lyapunov_controller.ino
-C_FILES = setup_pwm.c
+INO_FILES = $(wildcard *.ino)
+C_FILES = $(wildcard *.c)
 
 TEST_EXES = $(INO_FILES:.ino=.test) $(C_FILES:.c=.test)
 CSV_FILES = $(TEST_EXES:.test=.csv)
 PNG_FILES = $(TEST_EXES:.test=_results.png)
+
+# Common flags for include files
+INC_FLAGS = -include Arduino.h -include avr/io.h -include avr/wdt.h -include avr/interrupt.h -include shared_defs.h
 
 all: $(TEST_EXES)
 
@@ -25,36 +28,17 @@ ArduinoMockSim.o: ArduinoMockSim.cpp Arduino.h simulator.h
 test_runner.o: test_runner.cpp Arduino.h simulator.h
 	$(CXX) $(CXXFLAGS) -c test_runner.cpp -o test_runner.o
 
-# For .ino files
+# For .ino files - use C++ mode
+%.o: %.ino
+	$(CXX) $(CXXFLAGS) -x c++ $(INC_FLAGS) -c $< -o $@
+
+# For .c files
+%.o: %.c
+	$(CXX) $(CXXFLAGS) $(INC_FLAGS) -c $< -o $@
+
+# Link test executables
 %.test: %.o $(OBJS_COMMON) test_runner.o
 	$(CXX) $(CXXFLAGS) $^ -o $@
-
-classic_PI.o: classic_PI.ino
-	$(CXX) $(CXXFLAGS) -x c++ -include Arduino.h -include avr/io.h -include avr/wdt.h -include avr/interrupt.h -include shared_defs.h -c $< -o $@
-
-classic_voltage_current_limited.o: classic_voltage_current_limited.ino
-	$(CXX) $(CXXFLAGS) -x c++ -include Arduino.h -include avr/io.h -include avr/wdt.h -include avr/interrupt.h -include shared_defs.h -c $< -o $@
-
-dumb_SR.o: dumb_SR.ino
-	$(CXX) $(CXXFLAGS) -x c++ -include Arduino.h -include avr/io.h -include avr/wdt.h -include avr/interrupt.h -include shared_defs.h -c $< -o $@
-
-inductance_estimator.o: inductance_estimator.ino
-	$(CXX) $(CXXFLAGS) -x c++ -include Arduino.h -include avr/io.h -include avr/wdt.h -include avr/interrupt.h -include shared_defs.h -c $< -o $@
-
-very_simple_thermal_limited.o: very_simple_thermal_limited.ino
-	$(CXX) $(CXXFLAGS) -x c++ -include Arduino.h -include avr/io.h -include avr/wdt.h -include avr/interrupt.h -include shared_defs.h -c $< -o $@
-
-very_simple_thermal_limited_with_WDT.o: very_simple_thermal_limited_with_WDT.ino
-	$(CXX) $(CXXFLAGS) -x c++ -include Arduino.h -include avr/io.h -include avr/wdt.h -include avr/interrupt.h -include shared_defs.h -c $< -o $@
-
-weird_SR.o: weird_SR.ino
-	$(CXX) $(CXXFLAGS) -x c++ -include Arduino.h -include avr/io.h -include avr/wdt.h -include avr/interrupt.h -include shared_defs.h -c $< -o $@
-
-lyapunov_controller.o: lyapunov_controller.ino
-	$(CXX) $(CXXFLAGS) -x c++ -include Arduino.h -include avr/io.h -include avr/wdt.h -include avr/interrupt.h -include shared_defs.h -c $< -o $@
-
-setup_pwm.o: setup_pwm.c
-	$(CXX) $(CXXFLAGS) -include Arduino.h -include avr/io.h -include avr/wdt.h -include avr/interrupt.h -include shared_defs.h -c $< -o $@
 
 %.csv: %.test
 	./$< $@

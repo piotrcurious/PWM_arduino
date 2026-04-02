@@ -19,8 +19,8 @@
 #define CURRENT_THRESHOLD 0.01
 
 // Define the proportional and integral gains for the PI controller
-#define KP 0.2
-#define KI 50.0
+#define KP 1.0
+#define KI 200.0
 
 // Define the ADC resolution and reference voltage in bits and volts
 #define ADC_RESOLUTION 10
@@ -45,9 +45,16 @@ void setup() {
 }
 
 void loop() {
+  // Dynamic target tracking: square wave setpoint
+  float dynamic_target = TARGET_VOLTAGE;
+  if (fmod(millis() / 1000.0, 0.2) < 0.1) {
+    dynamic_target = TARGET_VOLTAGE * 0.8;
+  }
+
   // Soft start logic
   static float soft_start_target = 0;
-  if (soft_start_target < TARGET_VOLTAGE) soft_start_target += 0.05;
+  if (soft_start_target < dynamic_target) soft_start_target += 0.05;
+  if (soft_start_target > dynamic_target) soft_start_target -= 0.05;
 
   // Read the voltage and current feedback signals from the analog pins and convert them to volts and amps
   float ref = (_analog_reference_mode == INTERNAL) ? 1.1 : HARDWARE_ADC_REF;
