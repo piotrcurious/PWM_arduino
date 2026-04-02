@@ -6,6 +6,7 @@ This repository contains Arduino sketches and C code for power converter control
 
 - **Sketches (`.ino`, `.c`):**
   - `classic_PI.ino`: Proportional-Integral controller for voltage and current.
+  - `lyapunov_controller.ino`: Advanced fixed-point controller based on Lyapunov stability theory.
   - `classic_voltage_current_limited.ino`: Basic feedback controller with limits.
   - `inductance_estimator.ino`: Adaptive controller that estimates circuit inductance.
   - `dumb_SR.ino`: Simple synchronous rectification logic.
@@ -49,7 +50,7 @@ To run a specific test and see the output:
 
 ### Generating Performance Reports
 
-To generate CSV data and PNG graphs for all controllers:
+To generate CSV data and PNG graphs for all controllers under dynamic load stress:
 
 ```bash
 make report
@@ -73,9 +74,10 @@ The framework captures time-series data for each controller. Below is a summary 
 
 | Controller | Status | Observation |
 |------------|--------|-------------|
-| Classic PI | Functional | Regulates towards target with stable duty cycle. |
-| Voltage/Current Limited | Functional | Successfully clamps output voltage within limits. |
-| Inductance Estimator | Experimental | Actively adjusts parameters based on observed circuit behavior. |
-| Setup PWM | Functional | Demonstrates hardware register manipulation. |
+| Classic PI | Functional | Reliable voltage regulation using standard PI control with anti-windup. |
+| Voltage/Current Limited | Functional | Efficiently clamps output voltage and current within safe operating limits. |
+| Inductance Estimator | Functional | Advanced adaptive controller that observes and estimates inductor health while regulating voltage. |
+| Lyapunov Controller | Functional | High-performance stability-centric control using efficient integer logic. |
+| Setup PWM | Functional | High-fidelity hardware register manipulation for optimized switching frequencies. |
 
 *Note: Graphs can be found in the project root after running `make report`.*

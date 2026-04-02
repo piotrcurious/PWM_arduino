@@ -12,7 +12,7 @@ int main(int argc, char** argv) {
     if (argc > 1) {
         csv = fopen(argv[1], "w");
         if (csv) {
-            fprintf(csv, "time,v_out,i_l,temp,pwm\n");
+            fprintf(csv, "time,v_out,i_l,temp,pwm,inductance\n");
         }
     }
 
@@ -35,8 +35,9 @@ int main(int argc, char** argv) {
         }
 
         if (csv && (i % 10 == 0)) {
-            fprintf(csv, "%.6f,%.2f,%.2f,%.2f,%d\n",
-                    simulator.sim_time_sec, simulator.V_out, simulator.I_L, simulator.Temp, simulator.pwm_pin_val);
+            extern float inductance;
+            fprintf(csv, "%.6f,%.2f,%.2f,%.2f,%d,%.10f\n",
+                    simulator.sim_time_sec, simulator.V_out, simulator.I_L, simulator.Temp, simulator.pwm_pin_val, (double)inductance);
         }
 
         if (i % (steps/10) == 0) {

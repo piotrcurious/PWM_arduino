@@ -7,7 +7,7 @@ CFLAGS = -I. -Wall
 SRCS_COMMON = ArduinoMock.cpp ArduinoMockSim.cpp
 OBJS_COMMON = ArduinoMock.o ArduinoMockSim.o
 
-INO_FILES = classic_PI.ino classic_voltage_current_limited.ino dumb_SR.ino inductance_estimator.ino very_simple_thermal_limited.ino very_simple_thermal_limited_with_WDT.ino weird_SR.ino
+INO_FILES = classic_PI.ino classic_voltage_current_limited.ino dumb_SR.ino inductance_estimator.ino very_simple_thermal_limited.ino very_simple_thermal_limited_with_WDT.ino weird_SR.ino lyapunov_controller.ino
 C_FILES = setup_pwm.c
 
 TEST_EXES = $(INO_FILES:.ino=.test) $(C_FILES:.c=.test)
@@ -48,6 +48,9 @@ very_simple_thermal_limited_with_WDT.o: very_simple_thermal_limited_with_WDT.ino
 	$(CXX) $(CXXFLAGS) -x c++ -include Arduino.h -include avr/io.h -include avr/wdt.h -include avr/interrupt.h -include shared_defs.h -c $< -o $@
 
 weird_SR.o: weird_SR.ino
+	$(CXX) $(CXXFLAGS) -x c++ -include Arduino.h -include avr/io.h -include avr/wdt.h -include avr/interrupt.h -include shared_defs.h -c $< -o $@
+
+lyapunov_controller.o: lyapunov_controller.ino
 	$(CXX) $(CXXFLAGS) -x c++ -include Arduino.h -include avr/io.h -include avr/wdt.h -include avr/interrupt.h -include shared_defs.h -c $< -o $@
 
 setup_pwm.o: setup_pwm.c

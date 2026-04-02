@@ -65,6 +65,9 @@ long arduino_random_2(long howsmall, long howbig);
 // Placeholder for analogWriteFrequency
 void analogWriteFrequency(uint8_t pin, uint32_t frequency);
 
+void setup();
+void loop();
+
 #ifdef __cplusplus
 }
 #endif

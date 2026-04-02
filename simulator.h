@@ -3,6 +3,7 @@
 #define SIMULATOR_H
 
 #include "Arduino.h"
+#include "shared_defs.h"
 #include <avr/io.h>
 
 class BoostSimulator {
@@ -17,6 +18,7 @@ public:
     double V_out = 5.0;     // Initial output voltage
     double I_L = 0.0;       // Inductor current
     double Temp = 25.0;     // Temperature (C)
+    double R_base = 50.0;   // Base load
 
     double sim_time_sec = 0; // Current simulation time in seconds
 
@@ -26,6 +28,13 @@ public:
 
     void step(double dt_step) {
         sim_time_sec += dt_step;
+
+        // Update dynamic load: Square wave between R_base and R_base/5
+        if (fmod(sim_time_sec, 0.1) < 0.05) {
+            R_load = R_base;
+        } else {
+            R_load = R_base / 5.0; // Heavy load
+        }
 
         bool switch_on = false;
 
@@ -73,6 +82,9 @@ public:
 
         // Temperature model: heating proportional to I_L^2
         Temp += (I_L * I_L * 0.0001 - (Temp - 25.0) * 0.001) * dt_step;
+
+        // Dynamic inductance simulation: L shifts slightly over time or temperature
+        L = 100e-6 * (1.0 + 0.001 * (Temp - 25.0));
     }
 
     uint16_t get_adc(uint8_t pin) {
@@ -83,14 +95,14 @@ public:
         double ref = 5.0;
         if (_analog_reference_mode == INTERNAL) ref = 1.1;
 
-        if (pin == A0) val = V_out * (1 + noise) * (1024.0 / ref) / 2.0;
+        if (pin == A0) val = V_out * (1 + noise) * (1.0 / VOLTAGE_DIVIDER_RATIO) * (1024.0 / ref);
         else if (pin == A1) val = I_L * R_shunt * (1024.0 / ref);
         else if (pin == A2) {
             double R = 10000.0 * exp(3950.0 * (1.0 / (Temp + 273.15) - 1.0 / 298.15));
-            val = 5.0 * R / (R + 10000.0) * (1024.0 / 5.0);
+            val = 5.0 * R / (R + 10000.0) * (1024.0 / ref);
         }
-        else if (pin == A3) val = V_out * (1024.0 / 5.0);
-        else if (pin == A4) val = V_in * (1024.0 / 5.0);
+        else if (pin == A3) val = V_out * (1.0 / VOLTAGE_DIVIDER_RATIO) * (1024.0 / ref);
+        else if (pin == A4) val = V_in * (1024.0 / ref);
 
         if (val > 1023) val = 1023;
         if (val < 0) val = 0;
