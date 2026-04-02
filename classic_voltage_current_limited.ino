@@ -39,6 +39,10 @@ void setup() {
 #include "shared_defs.h"
 
 void loop() {
+  // Soft start
+  static float ss_v = 0;
+  if (ss_v < VOLTAGE_MAX) ss_v += 0.02;
+
   // Read the feedback values from the analog pins and convert them to voltage and current
   float ref = (_analog_reference_mode == INTERNAL) ? 1.1 : HARDWARE_ADC_REF;
   float scale = ref / 1024.0;
@@ -46,7 +50,7 @@ void loop() {
   current = (float)analogRead(CURRENT_PIN) * scale;
 
   // Calculate the errors between the feedback values and the thresholds
-  error_v = VOLTAGE_MAX - voltage; // calculate the voltage error as the difference between the maximum and the actual voltage
+  error_v = ss_v - voltage; // calculate the voltage error as the difference between the maximum and the actual voltage
   error_i = CURRENT_MAX - current; // calculate the current error as the difference between the maximum and the actual current
 
   // Adjust the PWM duty cycle value based on the feedback errors and the gains

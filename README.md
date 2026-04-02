@@ -74,10 +74,10 @@ The framework captures time-series data for each controller. Below is a summary 
 
 | Controller | Status | Observation |
 |------------|--------|-------------|
-| Classic PI | Functional | Reliable voltage regulation using standard PI control with anti-windup. |
-| Voltage/Current Limited | Functional | Efficiently clamps output voltage and current within safe operating limits. |
+| Classic PI | Functional | Reliable voltage regulation using standard PI control with soft-start and anti-windup. |
+| Voltage/Current Limited | Functional | Efficiently clamps output voltage and current within safe operating limits with soft-start. |
 | Inductance Estimator | Functional | Advanced adaptive controller that observes and estimates inductor health while regulating voltage. |
-| Lyapunov Controller | Functional | High-performance stability-centric control using efficient integer logic. |
+| Lyapunov Controller | Functional | High-performance stability-centric control using efficient integer logic and soft-start. |
 | Setup PWM | Functional | High-fidelity hardware register manipulation for optimized switching frequencies. |
 
 ## Visual Performance Reports

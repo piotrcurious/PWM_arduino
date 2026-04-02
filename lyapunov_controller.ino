@@ -26,6 +26,10 @@ void setup() {
 }
 
 void loop() {
+  // Soft start target
+  static int32_t ss_v_target = 0;
+  if (ss_v_target < TARGET_V_CENTI) ss_v_target += 5;
+
   // Read feedback
   // Using pure integer logic for performance on 8-bit AVR
   // Assuming 5V reference and 10-bit ADC
@@ -43,7 +47,7 @@ void loop() {
   int32_t i_l = (int32_t)((i_raw * 5000) >> 10);
 
   // Errors
-  int32_t e_v = TARGET_V_CENTI - v_out;
+  int32_t e_v = ss_v_target - v_out;
   int32_t e_i = TARGET_I_CENTI - i_l;
 
   /**

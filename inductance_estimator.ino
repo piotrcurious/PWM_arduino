@@ -145,8 +145,8 @@ void loop() {
     float error = destination - expected_vout;
 
     // Gradient descent to update inductance estimate (as a proxy for system health)
-    // The learning rate 1e-6 is chosen for stability and observability in 0.5s simulation
-    inductance += error * 1e-6;
+    // Refined learning rate and damping
+    inductance += error * 1e-7;
 
     // Limit the inductance estimate to a reasonable range of values between 10 and 5000 microhenrys
     if (inductance < 10e-6) inductance = 10e-6;
