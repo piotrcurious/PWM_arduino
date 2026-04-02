@@ -19,4 +19,6 @@
 #define Rs 0.1      // Current sense resistor (same as R_SHUNT often)
 #endif
 
+#define VOLTAGE_DIVIDER_RATIO ((R1 + R2) / R2)
+
 #endif

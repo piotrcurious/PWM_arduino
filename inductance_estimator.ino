@@ -63,10 +63,10 @@ void setup() {
 // Control the system
 void loop() {
   // Read and convert analog inputs to physical values
-  voltage = analogRead(VOLTAGE_PIN) * VOLTAGE_REF / 1024;
-  current = analogRead(CURRENT_PIN) * VOLTAGE_REF / (1024 * R_SHUNT); // R_SHUNT is the shunt resistor value in ohms
-  temperature = THERMISTOR_BETA / log(analogRead(THERMISTOR_PIN) * THERMISTOR_RL / (1024 * THERMISTOR_R0) * exp(THERMISTOR_BETA / THERMISTOR_T0)) - 273.15;
-  destination = analogRead(DESTINATION_PIN) * VOLTAGE_REF / 1024;
+  voltage = (float)analogRead(VOLTAGE_PIN) * VOLTAGE_REF / 1024.0 * VOLTAGE_DIVIDER_RATIO;
+  current = (float)analogRead(CURRENT_PIN) * VOLTAGE_REF / (1024.0 * R_SHUNT); // R_SHUNT is the shunt resistor value in ohms
+  temperature = THERMISTOR_BETA / log((float)analogRead(THERMISTOR_PIN) * THERMISTOR_RL / (1024.0 * THERMISTOR_R0) * exp(THERMISTOR_BETA / THERMISTOR_T0)) - 273.15;
+  destination = (float)analogRead(DESTINATION_PIN) * VOLTAGE_REF / 1024.0;
 
   // Check if any of the conditions are violated and adjust PWM accordingly
   if (voltage > VOLTAGE_SETPOINT + VOLTAGE_TOLERANCE) { // Output voltage is too high
@@ -102,7 +102,9 @@ void loop() {
     // Apply a self-tuning strategy for voltage stabilization based on destination voltage feedback and inductance estimate
 
     // Calculate the expected output voltage based on the input voltage, duty cycle and inductance value
-    float expected = analogRead(INPUT_VOLTAGE_PIN) * VOLTAGE_REF / (1024 * (1 - pwm / PWM_MAX)) * (1 + pwm / PWM_MAX * inductance * PWM_FREQ / CAPACITOR_VALUE);
+    float duty = (float)pwm / PWM_MAX;
+    if (duty >= 1.0) duty = 0.99; // Prevent division by zero
+    float expected = (analogRead(INPUT_VOLTAGE_PIN) * VOLTAGE_REF / 1024.0) / (1.0 - duty) * (1.0 + duty * inductance * PWM_FREQ / CAPACITOR_VALUE);
 
     // Calculate the error between the expected and actual destination voltage
     float error = destination - expected;
