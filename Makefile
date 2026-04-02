@@ -11,6 +11,8 @@ INO_FILES = classic_PI.ino classic_voltage_current_limited.ino dumb_SR.ino induc
 C_FILES = setup_pwm.c
 
 TEST_EXES = $(INO_FILES:.ino=.test) $(C_FILES:.c=.test)
+CSV_FILES = $(TEST_EXES:.test=.csv)
+PNG_FILES = $(TEST_EXES:.test=_results.png)
 
 all: $(TEST_EXES)
 
@@ -23,7 +25,7 @@ ArduinoMockSim.o: ArduinoMockSim.cpp Arduino.h simulator.h
 test_runner.o: test_runner.cpp Arduino.h simulator.h
 	$(CXX) $(CXXFLAGS) -c test_runner.cpp -o test_runner.o
 
-# For .ino files: compile to .o first, then link
+# For .ino files
 %.test: %.o $(OBJS_COMMON) test_runner.o
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
@@ -51,11 +53,20 @@ weird_SR.o: weird_SR.ino
 setup_pwm.o: setup_pwm.c
 	$(CXX) $(CXXFLAGS) -include Arduino.h -include avr/io.h -include avr/wdt.h -include avr/interrupt.h -include shared_defs.h -c $< -o $@
 
+%.csv: %.test
+	./$< $@
+
+%_results.png: %.csv
+	python3 generate_graphs.py $< $(basename $<)
+
 test: all
 	@for test in $(TEST_EXES); do \
 		echo "Running $$test..."; \
 		./$$test > /dev/null && echo "  $$test passed" || echo "  $$test failed"; \
 	done
 
+report: $(PNG_FILES)
+	@echo "Reports generated."
+
 clean:
-	rm -f *.o *.test
+	rm -f *.o *.test *.csv *.png

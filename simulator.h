@@ -80,8 +80,11 @@ public:
         // Simple noise model
         double noise = (double)(rand() % 100 - 50) / 50.0 * 0.001;
 
-        if (pin == A0) val = V_out * (1 + noise) * (1024.0 / 5.0) / 2.0; // Use fixed 2.0 ratio to match VOLTAGE_DIVIDER_RATIO
-        else if (pin == A1) val = I_L * R_shunt * (1024.0 / 5.0);
+        double ref = 5.0;
+        if (_analog_reference_mode == INTERNAL) ref = 1.1;
+
+        if (pin == A0) val = V_out * (1 + noise) * (1024.0 / ref) / 2.0;
+        else if (pin == A1) val = I_L * R_shunt * (1024.0 / ref);
         else if (pin == A2) {
             double R = 10000.0 * exp(3950.0 * (1.0 / (Temp + 273.15) - 1.0 / 298.15));
             val = 5.0 * R / (R + 10000.0) * (1024.0 / 5.0);

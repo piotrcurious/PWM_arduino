@@ -51,7 +51,10 @@ void setup() {
   // Set PWM frequency and initial duty cycle
 
   analogWrite(PWM_PIN, pwm);
-  analogWriteFrequency(PWM_PIN, PWM_FREQ);
+  // analogWriteFrequency(PWM_PIN, PWM_FREQ);
+
+  // Set the analog reference to the internal 1.1V reference
+  analogReference(INTERNAL);
 
   // Enable the watchdog timer with a timeout period of 1 second
   wdt_enable(WDTO_1S);
@@ -63,10 +66,11 @@ void setup() {
 // Control the system
 void loop() {
   // Read and convert analog inputs to physical values
-  voltage = (float)analogRead(VOLTAGE_PIN) * VOLTAGE_REF / 1024.0 * VOLTAGE_DIVIDER_RATIO;
-  current = (float)analogRead(CURRENT_PIN) * VOLTAGE_REF / (1024.0 * R_SHUNT); // R_SHUNT is the shunt resistor value in ohms
+  float ref = (_analog_reference_mode == INTERNAL) ? 1.1 : HARDWARE_ADC_REF;
+  voltage = (float)analogRead(VOLTAGE_PIN) * ref / 1024.0 * VOLTAGE_DIVIDER_RATIO;
+  current = (float)analogRead(CURRENT_PIN) * ref / (1024.0 * R_SHUNT); // R_SHUNT is the shunt resistor value in ohms
   temperature = THERMISTOR_BETA / log((float)analogRead(THERMISTOR_PIN) * THERMISTOR_RL / (1024.0 * THERMISTOR_R0) * exp(THERMISTOR_BETA / THERMISTOR_T0)) - 273.15;
-  destination = (float)analogRead(DESTINATION_PIN) * VOLTAGE_REF / 1024.0;
+  destination = (float)analogRead(DESTINATION_PIN) * ref / 1024.0;
 
   // Check if any of the conditions are violated and adjust PWM accordingly
   if (voltage > VOLTAGE_SETPOINT + VOLTAGE_TOLERANCE) { // Output voltage is too high

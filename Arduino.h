@@ -46,6 +46,7 @@ void digitalWrite(uint8_t pin, uint8_t val);
 int digitalRead(uint8_t pin);
 int analogRead(uint8_t pin);
 void analogReference(uint8_t mode);
+extern uint8_t _analog_reference_mode;
 void analogWrite(uint8_t pin, int val);
 
 unsigned long millis(void);

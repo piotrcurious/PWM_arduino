@@ -43,8 +43,10 @@ void setup() {
 
 void loop() {
   // Read the voltage and current feedback from the analog pins
-  float voltage = analogRead(VOLTAGE_PIN) * (5.0 / 1023.0) * (R1 + R2) / R2; // R1 and R2 are the voltage divider resistors
-  float current = analogRead(CURRENT_PIN) * (5.0 / 1023.0) / Rs; // Rs is the current sense resistor
+  float ref = (_analog_reference_mode == INTERNAL) ? 1.1 : HARDWARE_ADC_REF;
+  float scale = ref / 1024.0;
+  float voltage = (float)analogRead(VOLTAGE_PIN) * scale * VOLTAGE_DIVIDER_RATIO;
+  float current = (float)analogRead(CURRENT_PIN) * scale / Rs;
 
   // Adjust the duty cycle based on the feedback and the target values
   if (voltage < VOLTAGE_TARGET - VOLTAGE_THRESHOLD) {
