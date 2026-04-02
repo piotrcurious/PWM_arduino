@@ -42,10 +42,15 @@ void setup() {
 
 void loop() {
   // Read the analog values from the feedback pins and convert them to voltages
-  float vfb = analogRead(VFB) * (1.1 / 1023.0); // Voltage feedback from load in volts
-  float ifb = analogRead(IFB) * (1.1 / 1023.0); // Current feedback from current sense resistor in volts
-  float vin = analogRead(VIN) * (1.1 / 1023.0); // Input voltage in volts
-  float ci = analogRead(CI) * (1.1 / 1023.0); // Integrating capacitor voltage in volts
+  float vfb = (float)analogRead(VFB) * (1.1 / 1023.0); // Voltage feedback from load in volts
+  float ifb = (float)analogRead(IFB) * (1.1 / 1023.0); // Current feedback from current sense resistor in volts
+  float vin = (float)analogRead(VIN) * (1.1 / 1023.0); // Input voltage in volts
+  float ci = (float)analogRead(CI) * (1.1 / 1023.0); // Integrating capacitor voltage in volts
+
+  // Use variables to avoid warnings
+  (void)vfb;
+  (void)ifb;
+  (void)vin;
 
   // Calculate the output voltage from the integrating capacitor voltage and the resistor divider ratio
   float vout = ci * (R1 + R2) / R2; // Output voltage in volts

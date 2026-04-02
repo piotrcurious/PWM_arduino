@@ -20,5 +20,14 @@
 #endif
 
 #define VOLTAGE_DIVIDER_RATIO ((R1 + R2) / R2)
+#define HARDWARE_ADC_REF 5.0
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+extern uint8_t _analog_reference_mode;
+#ifdef __cplusplus
+}
+#endif
 
 #endif

@@ -4,6 +4,8 @@
 #define VOLTAGE_PIN A0
 #define CURRENT_PIN A1
 
+#include "shared_defs.h"
+
 // Define the target output voltage and current in volts and amps
 #define TARGET_VOLTAGE 10.0
 #define TARGET_CURRENT 0.5
@@ -17,8 +19,8 @@
 #define CURRENT_THRESHOLD 0.01
 
 // Define the proportional and integral gains for the PI controller
-#define KP 0.05
-#define KI 0.01
+#define KP 0.5
+#define KI 0.1
 
 // Define the ADC resolution and reference voltage in bits and volts
 #define ADC_RESOLUTION 10
@@ -26,8 +28,6 @@
 
 // Define some constants for convenience
 #define PWM_MAX_VALUE 255 // The maximum value for analogWrite function
-#define PWM_PERIOD (1000000.0 / SWITCHING_FREQUENCY) // The PWM period in microseconds
-#define ADC_SCALE_FACTOR (ADC_REF_VOLTAGE / (1 << ADC_RESOLUTION)) // The scale factor to convert ADC readings to volts
 
 // Declare some global variables for storing the error and the integral term
 float voltage_error = 0.0;
@@ -46,27 +46,37 @@ void setup() {
 
 void loop() {
   // Read the voltage and current feedback signals from the analog pins and convert them to volts and amps
-  float voltage_feedback = analogRead(VOLTAGE_PIN) * ADC_SCALE_FACTOR;
-  float current_feedback = analogRead(CURRENT_PIN) * ADC_SCALE_FACTOR;
+  float ref = (_analog_reference_mode == INTERNAL) ? 1.1 : HARDWARE_ADC_REF;
+  float voltage_feedback = (float)analogRead(VOLTAGE_PIN) * (ref / 1024.0) * VOLTAGE_DIVIDER_RATIO;
+  float current_feedback = (float)analogRead(CURRENT_PIN) * (ref / 1024.0);
 
   // Calculate the voltage and current errors by subtracting the feedback from the target values
   voltage_error = TARGET_VOLTAGE - voltage_feedback;
   current_error = TARGET_CURRENT - current_feedback;
 
-  // Update the integral terms by adding the errors multiplied by the PWM period
-  voltage_integral += voltage_error * PWM_PERIOD;
-  current_integral += current_error * PWM_PERIOD;
+// Update the integral terms by adding the errors multiplied by the loop period (in seconds)
+float dt = 0.001; // Adjusted for simulation scale
+voltage_integral += voltage_error * dt;
+current_integral += current_error * dt;
+
+// Anti-windup
+voltage_integral = constrain(voltage_integral, -100.0, 100.0);
 
   // Calculate the PI controller output by adding the proportional and integral terms multiplied by the gains
   float pi_output = KP * voltage_error + KI * voltage_integral;
+  if (pi_output < 0) pi_output = 0;
 
   // Limit the PI output to the maximum duty cycle
-  if (pi_output > MAX_DUTY_CYCLE) {
-    pi_output = MAX_DUTY_CYCLE;
+  if (pi_output > 90.0) {
+    pi_output = 90.0;
+  }
+  if (pi_output < 0.0) {
+    pi_output = 0.0;
   }
   
   // Convert the PI output to a PWM value by scaling it to the PWM range
-  int pwm_value = map(pi_output, 0, 100.0, 0, PWM_MAX_VALUE);
+  // pi_output is in percent (0-100)
+  int pwm_value = (int)(pi_output * 2.55);
 
   // Write the PWM value to the PWM pin using analogWrite function
   analogWrite(PWM_PIN, pwm_value);

@@ -36,10 +36,14 @@ void setup() {
   OCR1A = pwm_value * (ICR1 + 1) / PWM_RES; // set the compare value for timer1A to match the PWM duty cycle
 }
 
+#include "shared_defs.h"
+
 void loop() {
   // Read the feedback values from the analog pins and convert them to voltage and current
-  voltage = analogRead(VOLTAGE_PIN) * (5.0 / 1023.0); // read the voltage pin and scale it to 0-5V range
-  current = analogRead(CURRENT_PIN) * (5.0 / 1023.0); // read the current pin and scale it to 0-5V range
+  float ref = (_analog_reference_mode == INTERNAL) ? 1.1 : HARDWARE_ADC_REF;
+  float scale = ref / 1024.0;
+  voltage = (float)analogRead(VOLTAGE_PIN) * scale * VOLTAGE_DIVIDER_RATIO;
+  current = (float)analogRead(CURRENT_PIN) * scale;
 
   // Calculate the errors between the feedback values and the thresholds
   error_v = VOLTAGE_MAX - voltage; // calculate the voltage error as the difference between the maximum and the actual voltage

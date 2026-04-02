@@ -8,6 +8,7 @@ uint8_t TCCR1B = 0;
 uint16_t ICR1 = 0;
 uint16_t OCR1A = 0;
 uint16_t OCR1B = 0;
+uint8_t _analog_reference_mode = DEFAULT;
 
 #ifdef __cplusplus
 MockSerial Serial;
@@ -57,5 +58,7 @@ void wdt_reset() {}
 void __attribute__((weak)) digitalWrite(uint8_t pin, uint8_t val) {}
 int __attribute__((weak)) digitalRead(uint8_t pin) { return 0; }
 int __attribute__((weak)) analogRead(uint8_t pin) { return 0; }
-void __attribute__((weak)) analogReference(uint8_t mode) {}
+void __attribute__((weak)) analogReference(uint8_t mode) {
+    _analog_reference_mode = mode;
+}
 void __attribute__((weak)) analogWrite(uint8_t pin, int val) {}
