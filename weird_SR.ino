@@ -77,4 +77,7 @@ void loop() {
 
   // Turn off both transistors at the end of the switching period
   digitalWrite(SRT, LOW);
+
+  // Minimal delay to allow other things or just simulate loop frequency
+  delay(1);
 }

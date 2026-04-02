@@ -19,8 +19,8 @@
 #define CURRENT_THRESHOLD 0.01
 
 // Define the proportional and integral gains for the PI controller
-#define KP 0.5
-#define KI 0.1
+#define KP 0.2
+#define KI 50.0
 
 // Define the ADC resolution and reference voltage in bits and volts
 #define ADC_RESOLUTION 10
@@ -45,13 +45,17 @@ void setup() {
 }
 
 void loop() {
+  // Soft start logic
+  static float soft_start_target = 0;
+  if (soft_start_target < TARGET_VOLTAGE) soft_start_target += 0.05;
+
   // Read the voltage and current feedback signals from the analog pins and convert them to volts and amps
   float ref = (_analog_reference_mode == INTERNAL) ? 1.1 : HARDWARE_ADC_REF;
   float voltage_feedback = (float)analogRead(VOLTAGE_PIN) * (ref / 1024.0) * VOLTAGE_DIVIDER_RATIO;
   float current_feedback = (float)analogRead(CURRENT_PIN) * (ref / 1024.0);
 
   // Calculate the voltage and current errors by subtracting the feedback from the target values
-  voltage_error = TARGET_VOLTAGE - voltage_feedback;
+  voltage_error = soft_start_target - voltage_feedback;
   current_error = TARGET_CURRENT - current_feedback;
 
 // Update the integral terms by adding the errors multiplied by the loop period (in seconds)
