@@ -5,8 +5,8 @@
 #define CURRENT_PIN A1
 
 // Define the target output voltage and current in volts and amps
-#define TARGET_VOLTAGE 12.0
-#define TARGET_CURRENT 1.0
+#define TARGET_VOLTAGE 10.0
+#define TARGET_CURRENT 0.5
 
 // Define the maximum duty cycle and the switching frequency in percent and hertz
 #define MAX_DUTY_CYCLE 90.0
@@ -17,8 +17,8 @@
 #define CURRENT_THRESHOLD 0.01
 
 // Define the proportional and integral gains for the PI controller
-#define KP 0.5
-#define KI 0.1
+#define KP 0.05
+#define KI 0.01
 
 // Define the ADC resolution and reference voltage in bits and volts
 #define ADC_RESOLUTION 10
@@ -66,7 +66,7 @@ void loop() {
   }
   
   // Convert the PI output to a PWM value by scaling it to the PWM range
-  int pwm_value = map(pi_output, 0, MAX_DUTY_CYCLE, 0, PWM_MAX_VALUE);
+  int pwm_value = map(pi_output, 0, 100.0, 0, PWM_MAX_VALUE);
 
   // Write the PWM value to the PWM pin using analogWrite function
   analogWrite(PWM_PIN, pwm_value);

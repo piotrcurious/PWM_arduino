@@ -24,11 +24,17 @@ unsigned long micros(void) {
 }
 
 void delay(unsigned long ms) {
-    simulator.sim_time_sec += (ms / 1000.0);
+    double end_time = simulator.sim_time_sec + (ms / 1000.0);
+    while (simulator.sim_time_sec < end_time) {
+        simulator.step(1e-6); // Small steps for physics simulation
+    }
 }
 
 void delayMicroseconds(unsigned int us) {
-    simulator.sim_time_sec += (us / 1000000.0);
+    double end_time = simulator.sim_time_sec + (us / 1000000.0);
+    while (simulator.sim_time_sec < end_time) {
+        simulator.step(1e-6); // Small steps for physics simulation
+    }
 }
 
 long map(long x, long in_min, long in_max, long out_min, long out_max) {
@@ -40,8 +46,8 @@ float constrain(float amt, float low, float high) {
     return (amt < low) ? low : ((amt > high) ? high : amt);
 }
 
-long arduino_random_1(long howbig) { return rand() % howbig; }
-long arduino_random_2(long howsmall, long howbig) { return howsmall + rand() % (howbig - howsmall); }
+long arduino_random_1(long howbig) { return rand() % (howbig ? howbig : 1); }
+long arduino_random_2(long howsmall, long howbig) { return howsmall + rand() % ((howbig - howsmall) ? (howbig - howsmall) : 1); }
 
 void analogWriteFrequency(uint8_t pin, uint32_t frequency) {}
 

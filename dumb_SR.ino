@@ -72,7 +72,7 @@ void loop() {
     timer1 = now;
     digitalWrite(KEY_PIN, HIGH);
     digitalWrite(SR_PIN, LOW);
-    timer2 = now + half_period * duty_cycle;
+    timer2 = now + period * duty_cycle;
     
     // If you want to measure the switching frequency, you can use this line to toggle an LED on pin 13 every cycle
     //digitalWrite(13, !digitalRead(13));

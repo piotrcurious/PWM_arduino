@@ -50,8 +50,8 @@ void setup() {
 // Control the system
 void loop() {
   // Read and convert analog inputs to physical values
-  voltage = analogRead(VOLTAGE_PIN) * VOLTAGE_REF / 1024;
-  current = analogRead(CURRENT_PIN) * VOLTAGE_REF / (1024 * R_SHUNT); // R_SHUNT is the shunt resistor value in ohms
+  voltage = (float)analogRead(VOLTAGE_PIN) * VOLTAGE_REF / 1024.0 * VOLTAGE_DIVIDER_RATIO;
+  current = (float)analogRead(CURRENT_PIN) * VOLTAGE_REF / (1024.0 * R_SHUNT); // R_SHUNT is the shunt resistor value in ohms
   temperature = THERMISTOR_BETA / log(analogRead(THERMISTOR_PIN) * THERMISTOR_RL / (1024 * THERMISTOR_R0) * exp(THERMISTOR_BETA / THERMISTOR_T0)) - 273.15;
 
   // Check if any of the conditions are violated and adjust PWM accordingly

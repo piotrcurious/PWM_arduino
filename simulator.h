@@ -3,14 +3,16 @@
 #define SIMULATOR_H
 
 #include "Arduino.h"
+#include <avr/io.h>
 
 class BoostSimulator {
 public:
     double V_in = 5.0;      // Input voltage
     double L = 100e-6;      // Inductance 100uH
     double C = 100e-6;      // Capacitance 100uF
-    double R_load = 100.0;   // Load resistance
+    double R_load = 50.0;   // Load resistance
     double R_shunt = 0.1;   // Shunt resistance
+    double V_diode = 0.7;   // Diode forward voltage
 
     double V_out = 5.0;     // Initial output voltage
     double I_L = 0.0;       // Inductor current
@@ -18,7 +20,7 @@ public:
 
     double sim_time_sec = 0; // Current simulation time in seconds
 
-    int pwm_pin_val = 0;    // 0-255 or HIGH/LOW
+    int pwm_pin_val = -1;   // 0-255 or HIGH/LOW, -1 if using registers
     bool key_pin_val = false;
     bool sr_pin_val = false;
 
@@ -26,30 +28,47 @@ public:
         sim_time_sec += dt_step;
 
         bool switch_on = false;
-        if (pwm_pin_val > 0) {
-            static double pwm_accum = 0;
-            pwm_accum += dt_step * 100000; // arbitrary freq for simulation
-            if (fmod(pwm_accum, 255.0) < pwm_pin_val) switch_on = true;
-        } else if (key_pin_val) {
-            switch_on = true;
-        }
 
-        // Realistic model should consider R_load and parasitic resistances to avoid infinite current
-        double R_parasitic = 0.5;
-        if (switch_on) {
-            I_L += ((V_in - I_L * R_parasitic) / L) * dt_step;
-            V_out += (-V_out / (C * R_load)) * dt_step;
+        // Determine switch state from registers or analogWrite
+        if (pwm_pin_val >= 0) {
+            static double pwm_accum = 0;
+            pwm_accum += dt_step * 10000; // ~10kHz default
+            if (fmod(pwm_accum, 255.0) < pwm_pin_val) switch_on = true;
         } else {
-            if (I_L > 0) {
-                I_L += ((V_in - V_out - I_L * R_parasitic) / L) * dt_step;
-                V_out += ((I_L - V_out / R_load) / C) * dt_step;
-            } else {
-                I_L = 0;
-                V_out += (-V_out / (C * R_load)) * dt_step;
+            // Hardware PWM using OCR1A and ICR1
+            if (ICR1 > 0) {
+                double period_s = (double)ICR1 / 16e6; // Assuming 16MHz clock
+                double time_in_period = fmod(sim_time_sec, period_s);
+                if (time_in_period < (double)OCR1A / 16e6) switch_on = true;
+            } else if (key_pin_val) {
+                switch_on = true;
             }
         }
 
-        if (I_L < 0) I_L = 0; // Ideal diode behavior
+        double R_parasitic = 0.1;
+        if (switch_on) {
+            // Inductor charges from V_in
+            I_L += ((V_in - I_L * R_parasitic) / L) * dt_step;
+            // Capacitor discharges into R_load
+            V_out += (-V_out / (C * R_load)) * dt_step;
+        } else {
+            // Inductor discharges into Capacitor through Diode
+            if (I_L > 0) {
+                I_L += ((V_in - V_out - V_diode - I_L * R_parasitic) / L) * dt_step;
+                V_out += ((I_L - V_out / R_load) / C) * dt_step;
+            } else {
+                I_L = 0;
+                // If V_out < V_in - V_diode, the capacitor is charged through the diode
+                if (V_out < V_in - V_diode) {
+                    double charging_i = (V_in - V_diode - V_out) / R_parasitic;
+                    V_out += (charging_i / C) * dt_step;
+                } else {
+                    V_out += (-V_out / (C * R_load)) * dt_step;
+                }
+            }
+        }
+
+        if (I_L < 0) I_L = 0;
         if (V_out < 0) V_out = 0;
 
         // Temperature model: heating proportional to I_L^2
@@ -58,8 +77,11 @@ public:
 
     uint16_t get_adc(uint8_t pin) {
         double val = 0;
-        if (pin == A0) val = V_out * (1024.0 / 5.0) * (10000.0 / (10000.0 + 10000.0)); // A0 is V_out through divider
-        else if (pin == A1) val = I_L * R_shunt * (1024.0 / 5.0); // A1 is current
+        // Simple noise model
+        double noise = (double)(rand() % 100 - 50) / 50.0 * 0.001;
+
+        if (pin == A0) val = V_out * (1 + noise) * (1024.0 / 5.0) / 2.0; // Use fixed 2.0 ratio to match VOLTAGE_DIVIDER_RATIO
+        else if (pin == A1) val = I_L * R_shunt * (1024.0 / 5.0);
         else if (pin == A2) {
             double R = 10000.0 * exp(3950.0 * (1.0 / (Temp + 273.15) - 1.0 / 298.15));
             val = 5.0 * R / (R + 10000.0) * (1024.0 / 5.0);

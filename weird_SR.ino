@@ -63,12 +63,12 @@ void loop() {
 
   // Turn on the key transistor for a fraction of the switching period proportional to the duty cycle
   digitalWrite(KT, HIGH);
-  // delayMicroseconds(duty * DT * 1000000); // This is slow in simulation
+  delayMicroseconds(duty * DT * 1000000);
 
   // Turn off the key transistor and turn on the synchronous rectifier transistor for the rest of the switching period
   digitalWrite(KT, LOW);
   digitalWrite(SRT, HIGH);
-  // delayMicroseconds((1 - duty) * DT * 1000000);
+  delayMicroseconds((1 - duty) * DT * 1000000);
 
   // Turn off both transistors at the end of the switching period
   digitalWrite(SRT, LOW);
