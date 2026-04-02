@@ -70,27 +70,25 @@ void loop() {
   // Switch the key pin and the SR pin according to the duty cycle and the switching frequency
   unsigned long now = micros();
   
+  // Simplified SR logic with basic dead-time
+  const unsigned long dead_time = 1; // 1us
+
   if (now - timer1 >= period) {
     timer1 = now;
-    digitalWrite(KEY_PIN, HIGH);
+    // Turn off SR first for dead-time
     digitalWrite(SR_PIN, LOW);
     timer2 = now + (unsigned long)(period * duty_cycle);
-    
-    // If you want to measure the switching frequency, you can use this line to toggle an LED on pin 13 every cycle
-    //digitalWrite(13, !digitalRead(13));
-    
-    // If you want to print out some debug information, you can use these lines to send data to serial monitor every cycle
-    //Serial.print("Voltage: ");
-    //Serial.print(voltage);
-    //Serial.print(" V, Current: ");
-    //Serial.print(current);
-    //Serial.print(" A, Duty cycle: ");
-    //Serial.println(duty_cycle);
-    
+    // Delay to start KEY
+    if (duty_cycle > 0.05) {
+      digitalWrite(KEY_PIN, HIGH);
+    }
    }
    
    if (now >= timer2) {
      digitalWrite(KEY_PIN, LOW);
-     digitalWrite(SR_PIN, HIGH);
+     // Small dead-time before SR
+     if (now >= timer2 + dead_time) {
+        digitalWrite(SR_PIN, HIGH);
+     }
    }
 }

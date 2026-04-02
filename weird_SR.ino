@@ -66,16 +66,29 @@ void loop() {
   duty = KP * error + KI * integral;
   duty = constrain(duty, 0.0, DMAX);
 
-  // Turn on the key transistor for a fraction of the switching period proportional to the duty cycle
+  // Synchronous Rectification with Dead-time
+  const int dead_time_us = 5;
+  long kt_on_us = (long)(duty * DT * 1000000.0) - dead_time_us;
+  long srt_on_us = (long)((1.0 - duty) * DT * 1000000.0) - dead_time_us;
+
+  if (kt_on_us < 0) kt_on_us = 0;
+  if (srt_on_us < 0) srt_on_us = 0;
+
+  // Key Transistor ON
+  digitalWrite(SRT, LOW);
+  delayMicroseconds(dead_time_us);
   digitalWrite(KT, HIGH);
-  delayMicroseconds(duty * DT * 1000000);
+  delayMicroseconds(kt_on_us);
 
-  // Turn off the key transistor and turn on the synchronous rectifier transistor for the rest of the switching period
+  // Transition
   digitalWrite(KT, LOW);
-  digitalWrite(SRT, HIGH);
-  delayMicroseconds((1 - duty) * DT * 1000000);
+  delayMicroseconds(dead_time_us);
 
-  // Turn off both transistors at the end of the switching period
+  // Synchronous Rectifier ON
+  digitalWrite(SRT, HIGH);
+  delayMicroseconds(srt_on_us);
+
+  // End of cycle
   digitalWrite(SRT, LOW);
 
   // Minimal delay to allow other things or just simulate loop frequency

@@ -26,9 +26,16 @@ void setup() {
 }
 
 void loop() {
+  // Dynamic target
+  int32_t dyn_target = TARGET_V_CENTI;
+  if (fmod(millis() / 1000.0, 0.2) < 0.1) {
+    dyn_target = (TARGET_V_CENTI * 8) / 10;
+  }
+
   // Soft start target
   static int32_t ss_v_target = 0;
-  if (ss_v_target < TARGET_V_CENTI) ss_v_target += 5;
+  if (ss_v_target < dyn_target) ss_v_target += 5;
+  if (ss_v_target > dyn_target) ss_v_target -= 5;
 
   // Read feedback
   // Using pure integer logic for performance on 8-bit AVR

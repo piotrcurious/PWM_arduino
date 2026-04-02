@@ -7,6 +7,7 @@ This repository contains Arduino sketches and C code for power converter control
 - **Sketches (`.ino`, `.c`):**
   - `classic_PI.ino`: Proportional-Integral controller for voltage and current.
   - `lyapunov_controller.ino`: Advanced fixed-point controller based on Lyapunov stability theory.
+  - `sliding_mode_controller.ino`: Robust non-linear controller for variable parameter tracking.
   - `classic_voltage_current_limited.ino`: Basic feedback controller with limits.
   - `inductance_estimator.ino`: Adaptive controller that estimates circuit inductance.
   - `dumb_SR.ino`: Simple synchronous rectification logic.
@@ -78,11 +79,16 @@ The framework captures time-series data for each controller. Below is a summary 
 | Voltage/Current Limited | Functional | Efficiently clamps output voltage and current within safe operating limits with soft-start. |
 | Inductance Estimator | Functional | Advanced adaptive controller that observes and estimates inductor health while regulating voltage. |
 | Lyapunov Controller | Functional | High-performance stability-centric control using efficient integer logic and soft-start. |
+| Sliding Mode | Functional | Robust tracking of dynamic targets using a sliding surface model. |
 | Setup PWM | Functional | High-fidelity hardware register manipulation for optimized switching frequencies. |
 
 ## Visual Performance Reports
 
-Below are the simulation results for key controllers under dynamic load stress (5x load increase every 50ms).
+Below are the simulation results for key controllers under dynamic load stress (5x load increase every 50ms) and dynamic target tracking (alternating setpoint between 10V and 8V).
+
+### Sliding Mode Controller
+![Sliding Mode Results](sliding_mode_controller_results.png)
+*The Sliding Mode controller shows exceptionally fast tracking of the dynamic setpoint with minimal overshoot.*
 
 ### Lyapunov Controller
 ![Lyapunov Results](lyapunov_controller_results.png)
@@ -99,3 +105,27 @@ Below are the simulation results for key controllers under dynamic load stress (
 ### Voltage/Current Limited Controller
 ![Limited Controller Results](classic_voltage_current_limited_results.png)
 *Simple feedback control focused on maintaining safe operating bounds for output voltage and current.*
+
+### Thermal Limited Controller
+![Thermal Limited Results](very_simple_thermal_limited_results.png)
+*Controller featuring over-temperature protection; duty cycle is throttled when the simulated temperature exceeds safety thresholds.*
+
+### Synchronous Rectification (SR)
+![Dumb SR Results](dumb_SR_results.png)
+*Validation of synchronous rectification logic, showing the relationship between primary and secondary switch timing.*
+
+### Hardware PWM Configuration
+![Setup PWM Results](setup_pwm_results.png)
+*Results from low-level register manipulation, demonstrating stable high-frequency PWM generation on AVR hardware.*
+
+### Advanced Thermal Protection (WDT)
+![WDT Thermal Results](very_simple_thermal_limited_with_WDT_results.png)
+*Thermal protection integrated with the AVR Watchdog Timer (WDT) for system-level fail-safe operation.*
+
+### Software-Timed Synchronous Rectification
+![Weird SR Results](weird_SR_results.png)
+*Testing of "weird" or software-timed SR switching patterns to evaluate the efficiency impacts of timing jitters.*
+
+## Contribution
+
+This project demonstrates how to bridge the gap between low-level embedded C/C++ (Arduino/AVR) and high-level physics simulation for rapid prototyping and validation of power electronics control algorithms.

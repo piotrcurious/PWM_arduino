@@ -16,10 +16,11 @@ int main(int argc, char** argv) {
         }
     }
 
+    simulator.load_config("sim_config.txt");
     setup();
-    printf("Simulation starting for 0.5 seconds of virtual time...\n");
+    printf("Simulation starting for 1.0 seconds of virtual time...\n");
 
-    double total_time = 0.5;
+    double total_time = 1.0;
     double dt_loop = 0.001; // Match common controller dt
     int steps = (int)(total_time / dt_loop);
 
