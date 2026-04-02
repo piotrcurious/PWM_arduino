@@ -80,4 +80,22 @@ The framework captures time-series data for each controller. Below is a summary 
 | Lyapunov Controller | Functional | High-performance stability-centric control using efficient integer logic. |
 | Setup PWM | Functional | High-fidelity hardware register manipulation for optimized switching frequencies. |
 
-*Note: Graphs can be found in the project root after running `make report`.*
+## Visual Performance Reports
+
+Below are the simulation results for key controllers under dynamic load stress (5x load increase every 50ms).
+
+### Lyapunov Controller
+![Lyapunov Results](lyapunov_controller_results.png)
+*The Lyapunov controller demonstrates stable tracking and quick recovery from load steps using efficient fixed-point math.*
+
+### Classic PI Controller
+![Classic PI Results](classic_PI_results.png)
+*Standard Proportional-Integral control showing typical regulation behavior and overshoot during transients.*
+
+### Inductance Estimator
+![Inductance Estimator Results](inductance_estimator_results.png)
+*The estimator adapts its control law by observing system discrepancies to estimate real-time inductor health.*
+
+### Voltage/Current Limited Controller
+![Limited Controller Results](classic_voltage_current_limited_results.png)
+*Simple feedback control focused on maintaining safe operating bounds for output voltage and current.*

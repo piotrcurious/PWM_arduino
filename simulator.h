@@ -9,8 +9,8 @@
 class BoostSimulator {
 public:
     double V_in = 5.0;      // Input voltage
-    double L = 100e-6;      // Inductance 100uH
-    double C = 100e-6;      // Capacitance 100uF
+    double L = 10e-3;      // Inductance 10mH (adjusted for 1kHz control)
+    double C = 10e-3;      // Capacitance 10mF
     double R_load = 50.0;   // Load resistance
     double R_shunt = 0.1;   // Shunt resistance
     double V_diode = 0.7;   // Diode forward voltage
@@ -84,7 +84,7 @@ public:
         Temp += (I_L * I_L * 0.0001 - (Temp - 25.0) * 0.001) * dt_step;
 
         // Dynamic inductance simulation: L shifts slightly over time or temperature
-        L = 100e-6 * (1.0 + 0.001 * (Temp - 25.0));
+        L = 10e-3 * (1.0 + 0.001 * (Temp - 25.0));
     }
 
     uint16_t get_adc(uint8_t pin) {
