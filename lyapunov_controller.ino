@@ -8,17 +8,16 @@
 
 // Targets (Fixed point, scaled by 100 for 2 decimal places)
 #define TARGET_V_CENTI 1200 // 12.00V
-#define TARGET_I_CENTI 100  // 1.00A
+#define CURRENT_LIMIT_CENTI 500 // 5.00A
 
-// Control Gains (Integer)
-#define K_V 1
-#define K_I 2
-
-// System Parameters
-#define VIN_CENTI 500 // 5.00V
+// Control Gains (Fixed point, scaled by 256 for bit shift)
+// These define the "stiffness" of the Lyapunov reaching law
+#define GAIN_V 256 // 1.0 (Voltage error to current target mapping)
+#define GAIN_I 128 // 0.5 (Current error to duty cycle adjustment)
 
 // Global State
-int32_t duty_scaled = 12800; // Duty cycle * 256 (0-65535)
+// Duty cycle scaled by 1000 for precision (0-100000 where 100000 is 100%)
+int32_t duty_milli = 50000;
 
 void setup() {
   pinMode(PWM_PIN, OUTPUT);
@@ -26,57 +25,59 @@ void setup() {
 }
 
 void loop() {
-  // Dynamic target
-  int32_t dyn_target = TARGET_V_CENTI;
+  // ── 1. Dynamic setpoint tracking ──────────────────────────────────────────
+  int32_t dyn_v = TARGET_V_CENTI;
   if (fmod(millis() / 1000.0, 0.2) < 0.1) {
-    dyn_target = (TARGET_V_CENTI * 8) / 10;
+    dyn_v = (TARGET_V_CENTI * 8) / 10;
   }
 
-  // Soft start target
-  static int32_t ss_v_target = 0;
-  if (ss_v_target < dyn_target) ss_v_target += 5;
-  if (ss_v_target > dyn_target) ss_v_target -= 5;
+  // ── 2. Reference Command Generation (Soft-Start) ──────────────────────────
+  static int32_t v_ref = 0;
+  if (v_ref < dyn_v) v_ref += 5;
+  if (v_ref > dyn_v) v_ref -= 5;
 
-  // Read feedback
-  // Using pure integer logic for performance on 8-bit AVR
-  // Assuming 5V reference and 10-bit ADC
-  // scale_centi = (5.0 / 1024.0) * 100 = 488 / 100 approx
-
+  // ── 3. Read and scale feedback (Pure Integer Logic) ───────────────────────
+  // Using constants from shared_defs.h implicitly for scaling
   uint32_t v_raw = (uint32_t)analogRead(VOLTAGE_PIN);
   uint32_t i_raw = (uint32_t)analogRead(CURRENT_PIN);
 
   // v_centi = (v_raw * 5 * divider_ratio * 100) / 1024
-  // For divider_ratio = 4 (30k/10k): v_centi = (v_raw * 2000) / 1024
+  // For divider_ratio = 4.0: v_centi = (v_raw * 2000) / 1024
   int32_t v_out = (int32_t)((v_raw * 2000) >> 10);
 
   // i_centi = (i_raw * 5 * 100) / (1024 * R_SHUNT)
   // For R_SHUNT = 0.1: i_centi = (i_raw * 5000) / 1024
   int32_t i_l = (int32_t)((i_raw * 5000) >> 10);
 
-  // Errors
-  int32_t e_v = ss_v_target - v_out;
-  int32_t e_i = TARGET_I_CENTI - i_l;
+  // ── 4. Energy-Based Control Law (Cascaded Structure) ──────────────────────
+  // We want to maintain a specific energy level in the converter.
+  // First, map voltage error to an inductor current reference.
+  int32_t e_v = v_ref - v_out;
+  int32_t i_ref = (e_v * GAIN_V) >> 8;
 
-  /**
-   * Lyapunov-inspired control Law:
-   * We want to minimize energy error.
-   * A simplified law for D:
-   * Delta_D = K1 * e_v + K2 * e_i
-   * We use integer logic to update duty cycle.
-   */
+  // Safety Clamps
+  if (i_ref > CURRENT_LIMIT_CENTI) i_ref = CURRENT_LIMIT_CENTI;
+  if (i_ref < 0) i_ref = 0;
 
-  int32_t adjustment = (K_V * e_v) + (K_I * e_i);
+  // Current error drives the duty cycle update
+  int32_t e_i = i_ref - i_l;
 
-  duty_scaled += adjustment;
+  // ── 5. Lyapunov-Inspired Reaching Law ─────────────────────────────────────
+  // Delta_Duty = Gamma * Error
+  // This update law ensures the system state moves towards the sliding surface
+  // defined by the current reference, which in turn regulates the voltage.
+  int32_t adjustment = (e_i * GAIN_I);
 
-  // Constraints
-  if (duty_scaled > 23040) duty_scaled = 23040; // Max 90% (256 * 0.9 * 100? No, 255 * 0.9 = 230ish)
-  // Let's use 0-25500 for duty_scaled where 25500 is 100%
-  if (duty_scaled > 23000) duty_scaled = 23000;
-  if (duty_scaled < 0) duty_scaled = 0;
+  duty_milli += adjustment;
 
-  analogWrite(PWM_PIN, duty_scaled / 100);
+  // ── 6. Constraints & Safety ───────────────────────────────────────────────
+  if (duty_milli > 90000) duty_milli = 90000; // Max 90% duty cycle
+  if (duty_milli < 0)     duty_milli = 0;
 
-  // Simulation delay to match loop frequency
+  // ── 7. Output PWM ─────────────────────────────────────────────────────────
+  // Convert duty_milli (0-100000) to standard Arduino PWM (0-255)
+  int pwm_val = (int)((duty_milli * 255L) / 100000L);
+  analogWrite(PWM_PIN, pwm_val);
+
   delay(1);
 }
