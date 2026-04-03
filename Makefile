@@ -56,4 +56,4 @@ report: $(PNG_FILES)
 	@echo "Reports generated."
 
 clean:
-	rm -f *.o *.test *.csv *.png
+	rm -f *.o *.test *.csv

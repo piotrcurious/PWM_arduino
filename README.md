@@ -6,10 +6,10 @@ This repository contains Arduino sketches and C code for power converter control
 
 - **Sketches (`.ino`, `.c`):**
   - `classic_PI.ino`: Proportional-Integral controller for voltage and current.
-  - `lyapunov_controller.ino`: Advanced fixed-point controller based on Lyapunov stability theory.
+  - `lyapunov_controller.ino`: High-performance energy-based controller using fixed-point integer logic and a Lyapunov-inspired reaching law.
   - `sliding_mode_controller.ino`: Advanced cascaded Sliding Mode Control (SMC) using a variable reaching law and plant-inversion based equivalent control feed-forward.
   - `classic_voltage_current_limited.ino`: Basic feedback controller with limits.
-  - `inductance_estimator.ino`: Adaptive controller that estimates circuit inductance.
+  - `inductance_estimator.ino`: Adaptive PI controller with real-time inductance estimation and feed-forward compensation.
   - `dumb_SR.ino`: Simple synchronous rectification logic.
   - `weird_SR.ino`: Software-timed synchronous rectification.
   - `very_simple_thermal_limited.ino`: Controller with basic over-temperature protection.
@@ -92,7 +92,7 @@ Below are the simulation results for key controllers under dynamic load stress (
 
 ### Lyapunov Controller
 ![Lyapunov Results](lyapunov_controller_results.png)
-*The Lyapunov controller demonstrates stable tracking and quick recovery from load steps using efficient fixed-point math.*
+*The Lyapunov controller demonstrates stable tracking and quick recovery from load steps using efficient fixed-point math and an energy-based cascaded control structure.*
 
 ### Classic PI Controller
 ![Classic PI Results](classic_PI_results.png)
@@ -100,7 +100,7 @@ Below are the simulation results for key controllers under dynamic load stress (
 
 ### Inductance Estimator
 ![Inductance Estimator Results](inductance_estimator_results.png)
-*The estimator adapts its control law by observing system discrepancies to estimate real-time inductor health.*
+*The estimator adapts its control law by observing system discrepancies to estimate real-time inductor health. It uses a PI loop for regulation and an observer to refine the inductance-based feed-forward term.*
 
 ### Voltage/Current Limited Controller
 ![Limited Controller Results](classic_voltage_current_limited_results.png)
