@@ -1,0 +1,12 @@
+# Build artifacts
+*.o
+*.test
+*.exe
+
+# Simulation data
+*.csv
+sim_config.txt
+tmp_*
+
+# Logs
+*.log

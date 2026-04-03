@@ -7,7 +7,7 @@ This repository contains Arduino sketches and C code for power converter control
 - **Sketches (`.ino`, `.c`):**
   - `classic_PI.ino`: Proportional-Integral controller for voltage and current.
   - `lyapunov_controller.ino`: Advanced fixed-point controller based on Lyapunov stability theory.
-  - `sliding_mode_controller.ino`: Robust non-linear controller for variable parameter tracking.
+  - `sliding_mode_controller.ino`: Advanced cascaded Sliding Mode Control (SMC) using a variable reaching law and plant-inversion based equivalent control feed-forward.
   - `classic_voltage_current_limited.ino`: Basic feedback controller with limits.
   - `inductance_estimator.ino`: Adaptive controller that estimates circuit inductance.
   - `dumb_SR.ino`: Simple synchronous rectification logic.
@@ -88,7 +88,7 @@ Below are the simulation results for key controllers under dynamic load stress (
 
 ### Sliding Mode Controller
 ![Sliding Mode Results](sliding_mode_controller_results.png)
-*The Sliding Mode controller shows exceptionally fast tracking of the dynamic setpoint with minimal overshoot.*
+*The Sliding Mode controller shows exceptionally fast tracking of the dynamic setpoint with minimal overshoot. It utilizes a cascaded structure (voltage Sv and current Si surfaces) with a variable reaching law and plant-inversion based equivalent control ($u_{eq}$) for superior steady-state tracking and disturbance rejection.*
 
 ### Lyapunov Controller
 ![Lyapunov Results](lyapunov_controller_results.png)

@@ -22,6 +22,12 @@
 #define VOLTAGE_DIVIDER_RATIO ((R1 + R2) / R2)
 #define HARDWARE_ADC_REF 5.0
 
+// Pin Mapping for Simulator
+#define PIN_MAIN_SWITCH 9
+#define PIN_SR_SWITCH 10
+#define PIN_KEY_SWITCH 2
+#define PIN_SR_KEY 3
+
 #ifdef __cplusplus
 extern "C" {
 #endif

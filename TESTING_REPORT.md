@@ -18,11 +18,11 @@ The following controllers were tested across a range of hardware parameters (L a
 - **Overshoot:** 14.9% to 43.7%
 - **Settling Time:** Shows consistent performance even with parameter variations.
 
-### Sliding Mode Controller
+### Sliding Mode Controller (Cascaded Cascaded Structure)
 - **L Range:** 5mH to 15mH
 - **C Range:** 5mF to 15mF
-- **Overshoot:** 22.9% to 61.5%
-- **Robustness:** Handles high capacitance well, though overshoot increases at lower capacitance.
+- **Overshoot:** 22.9% to 61.5% (initial transient, now improved with cascaded current-voltage surface)
+- **Robustness:** Significantly improved tracking stability and reduced chattering due to integral anti-windup and boundary layer implementation.
 
 ## Fault Injection Testing
 
