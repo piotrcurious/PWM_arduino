@@ -18,8 +18,8 @@ def analyze_results(csv_file):
     df = pd.read_csv(csv_file)
     if df.empty: return 1.0, 0.0
 
-    # Define settling time as the time it takes to stay within 10% of target (10V)
-    target_v = 10.0
+    # Define settling time as the time it takes to stay within 10% of target (12V)
+    target_v = 12.0
     final_v = df['v_out'].iloc[-1]
 
     error = np.abs(df['v_out'] - target_v)
